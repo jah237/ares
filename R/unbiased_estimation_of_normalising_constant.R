@@ -162,7 +162,7 @@ cdm_euler2 <- function(x, delta, a, b, reac_coord, plot){
   }
 }
 
-msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delta_scale, plot){
+msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delta_scale, plot, save_seed, id){
 
   m <- length(levels)
   survivors <- matrix(lambda(N), ncol = d)
@@ -176,6 +176,22 @@ msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delt
     new_survivors <- matrix(0,nrow=0,ncol=d)
 
     for (j in 1:N){
+      
+      if(!exists(".Random.seed")){
+        set.seed(NULL)
+      }
+
+      if(save_seed==TRUE){
+        saved_seed <- .Random.seed
+        if((j==1) & (i>1)){
+          unlink(paste(paste("data/task",id,"level",i-1,"particle",N,sep="_"),".RData",sep=""))
+        } else if(j>1){
+          unlink(paste(paste("data/task",id,"level",i,"particle",j-1,sep="_"),".RData",sep=""))
+        }
+
+        name <- paste(paste("data/task",id,"level",i,"particle",j,sep="_"),".RData",sep="")
+        save(list=ls(), file=name)
+      }
 
       trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
 
@@ -300,7 +316,7 @@ cd_euler_coupled <- function(x1, x2, delta, z_a, z_b, xi, plot){
 #stratified sampling
 
 #Algorithm 4
-coupled_splitting <- function(N, d, lambda, z_a, levels, x0_1, x0_2, delta, xi, plot){
+coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, plot, save_seed, id){
 
   #add plotting option
   if(plot==TRUE){
@@ -328,6 +344,22 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, x0_1, x0_2, delta, xi, 
     z_b <- levels[i]
 
     for (j in 1:N){
+
+      if(!exists(".Random.seed")){
+        set.seed(NULL)
+      }
+
+      if(save_seed==TRUE){
+        saved_seed <- .Random.seed
+        if((j==1) & (i>1)){
+          unlink(paste(paste("data/task",id,"level",i-1,"particle",N,sep="_"),".RData",sep=""))
+        } else if(j>1){
+          unlink(paste(paste("data/task",id,"level",i,"particle",j-1,sep="_"),".RData",sep=""))
+        }
+
+        name <- paste(paste("data/task",id,"level",i,"particle",j,sep="_"),".RData",sep="")
+        save(list=ls(), file=name)
+      }
 
       x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
       M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
@@ -374,7 +406,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, x0_1, x0_2, delta, xi, 
 }
 
 #Algorithm 5
-mlpf <- function(L_gen, L_mass, N, d, lambda, xi, z_A, levels, plot=FALSE){
+mlpf <- function(L_gen, L_mass, N, d, lambda, xi, z_A, levels, plot=FALSE, save_seed, id){
 
   if(plot == TRUE){
 
@@ -407,11 +439,12 @@ mlpf <- function(L_gen, L_mass, N, d, lambda, xi, z_A, levels, plot=FALSE){
 
     #estimate using an ordinary particle filter
     out <- msplitting_euler3(N, d, lambda, z_A, levels, xi, delta,
-                             delta_scale=rep(sqrt(2),length(levels)-1), plot)
+                             delta_scale=rep(sqrt(2),length(levels)-1), plot,
+                             save_seed, id)
   } else {
 
     #estimate using coupled scheme
-    out <- coupled_splitting(N, d, lambda, z_A, levels, x_0, x_0, delta, xi, plot)/L_mass(L)
+    out <- coupled_splitting(N, d, lambda, z_A, levels, delta, xi, plot, save_seed, id)/L_mass(L)
   }
 
   return(list(p=out, L=L))
