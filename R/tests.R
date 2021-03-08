@@ -17,7 +17,7 @@ ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1
   xi <- function(x){return(min(x))}
 
   levels <- 2^(seq(1,length=no_levels,by=0.5))
-  
+
   set.seed(random_seed)
   v <- matrix(0,nrow=no_trials,ncol=2)
 
@@ -52,16 +52,16 @@ gather_results <- function(folder_name){
 }
 
 complete_filter <- function(id){
-  
+
   task <- id
 
   data_file <- paste("data/task_", task, ".RData", sep="")
   load(data_file)
-  
+
   new_filename <- paste("continued-data/task_", task, ".RData", sep="")
 
   .Random.seed <<- saved_seed
-  
+
   jx <- j
   ix <- i
 
@@ -69,9 +69,9 @@ complete_filter <- function(id){
   print(c("ix",ix,"jx",jx))
 
   if(L == 0){
-    
+
     print("L=0")
- 
+
     for (j in jx:N){
 
       print(c("i",i,"j",j))
@@ -92,7 +92,7 @@ complete_filter <- function(id){
         }
       }
     }
-    
+
     for (i in ix:m){
       new_survivors <- matrix(0,nrow=0,ncol=d)
 
@@ -136,7 +136,7 @@ complete_filter <- function(id){
     }
 
     out <- prod(n_surv) / N^m
-  
+
   } else {
 
     print("L>0")
@@ -171,20 +171,20 @@ complete_filter <- function(id){
       }
     }
 
-    for (i in 1:m){
+    for (i in ix:m){
 
     z_b <- levels[i]
 
     for (j in 1:N){
 
       print(c("i",i,"j",j))
-      
+
       if(save_seed==TRUE){
 
         saved_seed <- .Random.seed
         save(list=ls(), file=new_filename)
       }
- 
+
       x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
       M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
       x1_sample[[j]] <- M_sample$x1; x2_sample[[j]] <- M_sample$x2
@@ -228,7 +228,7 @@ complete_filter <- function(id){
   }
 
   v <- c(out,L)
-  
+
   results_name <- paste(paste("results/task",random_seed,sep="_"),".RData",sep="")
   save(v, file=results_name)
 
