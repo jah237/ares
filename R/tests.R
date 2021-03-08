@@ -93,50 +93,51 @@ complete_filter <- function(id){
       }
     }
 
-    for (i in ix:m){
-      new_survivors <- matrix(0,nrow=0,ncol=d)
+    if(ix < m){
+      for (i in ix:m){
+        new_survivors <- matrix(0,nrow=0,ncol=d)
 
-      for (j in 1:N){
+        for (j in 1:N){
 
-        print(c("i",i,"j",j))
+          print(c("i",i,"j",j))
 
-        if(save_seed==TRUE){
+          if(save_seed==TRUE){
 
-          saved_seed <- .Random.seed
-          save(list=ls(), file=new_filename)
-        }
+            saved_seed <- .Random.seed
+            save(list=ls(), file=new_filename)
+          }
 
 
-        trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
+          trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
 
-        if(trial$survived==1){
-          new_survivors <- rbind(new_survivors,trial$x)
+          if(trial$survived==1){
+            new_survivors <- rbind(new_survivors,trial$x)
 
-          if(plot==TRUE){
-            lines(rbind(survivors[j,],trial$x))
+            if(plot==TRUE){
+              lines(rbind(survivors[j,],trial$x))
+            }
           }
         }
+
+        if(plot==TRUE){
+          points(new_survivors,pch=4)
+        }
+
+        n_surv[i] <- nrow(new_survivors)
+
+        if(n_surv[i] == 0){
+          return(0)
+        }
+
+        if(i < m){
+          indices <- sample(1:n_surv[i], N, replace=TRUE)
+          survivors <- new_survivors[indices,]
+          delta <- delta*delta_scale[i]
+        }
       }
 
-      if(plot==TRUE){
-        points(new_survivors,pch=4)
-      }
-
-      n_surv[i] <- nrow(new_survivors)
-
-      if(n_surv[i] == 0){
-        return(0)
-      }
-
-      if(i < m){
-        indices <- sample(1:n_surv[i], N, replace=TRUE)
-        survivors <- new_survivors[indices,]
-        delta <- delta*delta_scale[i]
-      }
+      out <- prod(n_surv) / N^m
     }
-
-    out <- prod(n_surv) / N^m
-
   } else {
 
     print("L>0")
@@ -171,60 +172,63 @@ complete_filter <- function(id){
       }
     }
 
-    for (i in (ix+1):m){
+    if(ix < m){
+      for (i in (ix+1):m){
 
-    z_b <- levels[i]
+      z_b <- levels[i]
 
-    for (j in 1:N){
+      for (j in 1:N){
 
-      print(c("i",i,"j",j))
+        print(c("i",i,"j",j))
 
-      if(save_seed==TRUE){
+        if(save_seed==TRUE){
 
-        saved_seed <- .Random.seed
-        save(list=ls(), file=new_filename)
-      }
+          saved_seed <- .Random.seed
+          save(list=ls(), file=new_filename)
+        }
 
-      x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
-      M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
-      x1_sample[[j]] <- M_sample$x1; x2_sample[[j]] <- M_sample$x2
-      Gx1[j] <- M_sample$results[1]; Gx2[j] <- M_sample$results[2]
+        x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
+        M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
+        x1_sample[[j]] <- M_sample$x1; x2_sample[[j]] <- M_sample$x2
+        Gx1[j] <- M_sample$results[1]; Gx2[j] <- M_sample$results[2]
 
-      if(plot == TRUE){
-        lines(rbind(x1_vals[[j]],x1_sample[[j]]), col=cols[j])
-        lines(rbind(x2_vals[[j]],x2_sample[[j]]), col=cols[j])
-        if(identical(M_sample$results,c(1,1))){
-          points(rbind(M_sample$x1, M_sample$x2), pch=4)
-        } else if(identical(M_sample$results,c(0,1))){
-          points(rbind(M_sample$x1, M_sample$x2), pch=4, col=c("red","black"))
-        } else if(identical(M_sample$results,c(1,0))){
-          points(rbind(M_sample$x1, M_sample$x2), pch=4, col=c("black","red"))
-        } else {
-          points(rbind(M_sample$x1, M_sample$x2), pch=4, col="red")
+        if(plot == TRUE){
+          lines(rbind(x1_vals[[j]],x1_sample[[j]]), col=cols[j])
+          lines(rbind(x2_vals[[j]],x2_sample[[j]]), col=cols[j])
+          if(identical(M_sample$results,c(1,1))){
+            points(rbind(M_sample$x1, M_sample$x2), pch=4)
+          } else if(identical(M_sample$results,c(0,1))){
+            points(rbind(M_sample$x1, M_sample$x2), pch=4, col=c("red","black"))
+          } else if(identical(M_sample$results,c(1,0))){
+            points(rbind(M_sample$x1, M_sample$x2), pch=4, col=c("black","red"))
+          } else {
+            points(rbind(M_sample$x1, M_sample$x2), pch=4, col="red")
+          }
         }
       }
-    }
 
-    survivors1[i] <- sum(Gx1); survivors2[i] <- sum(Gx2)
+      survivors1[i] <- sum(Gx1); survivors2[i] <- sum(Gx2)
 
-    if((survivors1[i] == 0) | (survivors2[i] == 0)){
+      if((survivors1[i] == 0) | (survivors2[i] == 0)){
 
-      return(0)
-    } else if(i < m) {
+        return(0)
+      } else if(i < m) {
 
-      indices1 <- numeric(N); indices2 <- numeric(N)
-      no_ind <- 0
-      for(k in 1:N){
-        new_indices <- coupled_resampling(Gx1, Gx2)
-        indices1[k] <- new_indices$I1; indices2[k] <- new_indices$I2
-        no_ind <- no_ind + new_indices$type
+        indices1 <- numeric(N); indices2 <- numeric(N)
+        no_ind <- 0
+        for(k in 1:N){
+          new_indices <- coupled_resampling(Gx1, Gx2)
+          indices1[k] <- new_indices$I1; indices2[k] <- new_indices$I2
+          no_ind <- no_ind + new_indices$type
+        }
+        x1_vals <- x1_sample[indices1]; x2_vals <- x2_sample[indices2]
       }
-      x1_vals <- x1_sample[indices1]; x2_vals <- x2_sample[indices2]
+      prop_ind[i] <- no_ind/N
+      }
     }
-    prop_ind[i] <- no_ind/N
-  }
-  proportion_independent <<- prop_ind
-  out <- (prod(survivors1) - prod(survivors2))/N^m
+
+    proportion_independent <<- prop_ind
+    out <- (prod(survivors1) - prod(survivors2))/N^m
   }
 
   v <- c(out,L)
