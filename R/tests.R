@@ -171,7 +171,7 @@ complete_filter <- function(id){
       }
     }
 
-    for (i in 1:m){
+    for (i in ix:m){
 
     z_b <- levels[i]
 
