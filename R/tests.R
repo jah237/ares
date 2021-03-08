@@ -55,17 +55,32 @@ complete_filter <- function(id){
   
   task <- id
 
-  filename <- paste("data/task_", task, ".RData", sep="")
-  load(filename)
+  data_file <- paste("data/task_", task, ".RData", sep="")
+  load(data_file)
+  
+  new_filename <- paste("continued-data/task_", task, ".RData", sep="")
 
   .Random.seed <<- saved_seed
   
   jx <- j
   ix <- i
 
-  if(L == 0){
+  print(c("L",L))
+  print(c("ix",ix,"jx",jx))
 
+  if(L == 0){
+    
+    print("L=0")
+ 
     for (j in jx:N){
+
+      print(c("i",i,"j",j))
+
+      if(save_seed==TRUE){
+
+        saved_seed <- .Random.seed
+        save(list=ls(), file=new_filename)
+      }
 
       trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
 
@@ -82,6 +97,15 @@ complete_filter <- function(id){
       new_survivors <- matrix(0,nrow=0,ncol=d)
 
       for (j in 1:N){
+
+        print(c("i",i,"j",j))
+
+        if(save_seed==TRUE){
+
+          saved_seed <- .Random.seed
+          save(list=ls(), file=new_filename)
+        }
+
 
         trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
 
@@ -112,11 +136,20 @@ complete_filter <- function(id){
     }
 
     out <- prod(n_surv) / N^m
-    return(out)
   
   } else {
 
+    print("L>0")
+
     for (j in jx:N){
+
+      print(c("i",i,"j",j))
+
+      if(save_seed==TRUE){
+
+        saved_seed <- .Random.seed
+        save(list=ls(), file=new_filename)
+      }
 
       x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
       M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
@@ -140,11 +173,18 @@ complete_filter <- function(id){
 
     for (i in 1:m){
 
-    print(c("i",i))
     z_b <- levels[i]
 
     for (j in 1:N){
 
+      print(c("i",i,"j",j))
+      
+      if(save_seed==TRUE){
+
+        saved_seed <- .Random.seed
+        save(list=ls(), file=new_filename)
+      }
+ 
       x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
       M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
       x1_sample[[j]] <- M_sample$x1; x2_sample[[j]] <- M_sample$x2
@@ -179,13 +219,18 @@ complete_filter <- function(id){
         indices1[k] <- new_indices$I1; indices2[k] <- new_indices$I2
         no_ind <- no_ind + new_indices$type
       }
-      #print("indices1"); print(indices1); print("indices2"); print(indices2)
       x1_vals <- x1_sample[indices1]; x2_vals <- x2_sample[indices2]
     }
     prop_ind[i] <- no_ind/N
   }
   proportion_independent <<- prop_ind
   out <- (prod(survivors1) - prod(survivors2))/N^m
-  return(out)
   }
+
+  v <- c(out,L)
+  
+  results_name <- paste(paste("results/task",random_seed,sep="_"),".RData",sep="")
+  save(v, file=results_name)
+
+  return(v)
 }

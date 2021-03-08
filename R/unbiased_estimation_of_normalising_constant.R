@@ -395,7 +395,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
         indices1[k] <- new_indices$I1; indices2[k] <- new_indices$I2
         no_ind <- no_ind + new_indices$type
       }
-      #print("indices1"); print(indices1); print("indices2"); print(indices2)
+  
       x1_vals <- x1_sample[indices1]; x2_vals <- x2_sample[indices2]
     }
     prop_ind[i] <- no_ind/N
