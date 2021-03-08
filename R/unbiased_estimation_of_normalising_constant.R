@@ -300,7 +300,7 @@ cd_euler_coupled <- function(x1, x2, delta, z_a, z_b, xi, plot){
 #stratified sampling
 
 #Algorithm 4
-coupled_splitting <- function(N, d, lambda, z_a, levels, x0_1, x0_2, delta, xi, plot){
+coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, plot){
 
   #add plotting option
   if(plot==TRUE){
@@ -411,7 +411,7 @@ mlpf <- function(L_gen, L_mass, N, d, lambda, xi, z_A, levels, plot=FALSE){
   } else {
 
     #estimate using coupled scheme
-    out <- coupled_splitting(N, d, lambda, z_A, levels, x_0, x_0, delta, xi, plot)/L_mass(L)
+    out <- coupled_splitting(N, d, lambda, z_A, levels, delta, xi, plot)/L_mass(L)
   }
 
   return(list(p=out, L=L))
