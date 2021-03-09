@@ -176,7 +176,7 @@ msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delt
     new_survivors <- matrix(0,nrow=0,ncol=d)
 
     for (j in 1:N){
-      
+
       if(!exists(".Random.seed")){
         set.seed(NULL)
       }
@@ -395,7 +395,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
         indices1[k] <- new_indices$I1; indices2[k] <- new_indices$I2
         no_ind <- no_ind + new_indices$type
       }
-  
+
       x1_vals <- x1_sample[indices1]; x2_vals <- x2_sample[indices2]
     }
     prop_ind[i] <- no_ind/N
