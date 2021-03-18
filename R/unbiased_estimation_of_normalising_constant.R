@@ -196,7 +196,8 @@ msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delt
       trial <- cdm_euler2(survivors[j,], delta, z_A, levels[i], reac_coord, plot)
 
       if(trial$survived==1){
-        new_survivors <- rbind(new_survivors,trial$x)
+        #forcing d=1 to remain a matrix
+        new_survivors <- matrix(rbind(new_survivors,trial$x), ncol=d)
 
         if(plot==TRUE){
           lines(rbind(survivors[j,],trial$x))
@@ -216,7 +217,8 @@ msplitting_euler3 <- function(N, d, lambda, z_A, levels, reac_coord, delta, delt
 
     if(i < m){
       indices <- sample(1:n_surv[i], N, replace=TRUE)
-      survivors <- new_survivors[indices,]
+      #forcing d=1 to remain a matrix
+      survivors <- matrix(new_survivors[indices,], ncol=d)
       delta <- delta*delta_scale[i]
     }
   }
@@ -261,7 +263,7 @@ coupled_resampling <- function(Gx1, Gx2){
 }
 
 #Algorithm 2
-cd_euler_coupled <- function(x1, x2, delta, z_a, z_b, xi, plot){
+cd_euler_coupled <- function(d, x1, x2, delta, z_a, z_b, xi, plot){
 
   #add plotting option
 
@@ -275,7 +277,7 @@ cd_euler_coupled <- function(x1, x2, delta, z_a, z_b, xi, plot){
 
   while(res1==0){
     sgn <- (sgn + 1)%%2
-    w <- rnorm(2, mean = 0, sd = sd)
+    w <- rnorm(d, mean = 0, sd = sd)
     x1 <- x1 + w
 
     if(sgn == 1){
@@ -293,13 +295,13 @@ cd_euler_coupled <- function(x1, x2, delta, z_a, z_b, xi, plot){
 
   if((z_a < xi(x2)) & (xi(x2) < z_b)){
 
-    w <- rnorm(2, mean = 0, sd = sd)
+    w <- rnorm(d, mean = 0, sd = sd)
     x2 <- x2 + w_old + w
     delta <- 2*delta
     sd <- sqrt(delta)
 
     while((z_a <= xi(x2)) & (xi(x2) <= z_b)){
-      x2 <- x2 + rnorm(2, mean = 0, sd = sd)
+      x2 <- x2 + rnorm(d, mean = 0, sd = sd)
     }
   }
 
@@ -362,7 +364,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
       }
 
       x1 <- x1_vals[[j]]; x2 <- x2_vals[[j]]
-      M_sample <- cd_euler_coupled(x1, x2, delta, z_a, z_b, xi, plot)
+      M_sample <- cd_euler_coupled(d, x1, x2, delta, z_a, z_b, xi, plot)
       x1_sample[[j]] <- M_sample$x1; x2_sample[[j]] <- M_sample$x2
       Gx1[j] <- M_sample$results[1]; Gx2[j] <- M_sample$results[2]
 
@@ -401,7 +403,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
     prop_ind[i] <- no_ind/N
   }
   proportion_independent <<- prop_ind
-  out <- (prod(survivors1) - prod(survivors2))/N^m
+  out <- (prod(survivors1/N) - prod(survivors2/N))
   return(out)
 }
 
@@ -433,13 +435,13 @@ mlpf <- function(L_gen, L_mass, N, d, lambda, xi, z_A, levels, plot=FALSE, save_
 
   L <- L_gen()
 
-  delta <- 2^(-(L+4))
+  delta <- 2^(-(L+3))
 
   if(L == 0){
 
     #estimate using an ordinary particle filter
     out <- msplitting_euler3(N, d, lambda, z_A, levels, xi, delta,
-                             delta_scale=rep(sqrt(2),length(levels)-1),L,plot,
+                             delta_scale=rep(1,length(levels)-1),L,plot,
                              save_seed, id)/L_mass(L)
   } else {
 

@@ -10,6 +10,14 @@ ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1
     dgeom(x,0.5)
   }
 
+  #L_gen <- function(){
+  #  rgeom(1,0.7)
+  #}
+  #L_dens <- function(){
+  #  rgeom(1, 0.7)
+  #}
+ 
+
   lambda <- function(n){
     return(matrix(1.5,nrow=n,ncol=2))
   }
@@ -45,6 +53,7 @@ gather_results <- function(folder_name){
 
     load(filenames[[i]])
     p_estimates[i] <- v[1]
+    if(v[1]==0){print(filenames[[i]])}
     L_samples[i] <- v[2]
   }
 
@@ -246,15 +255,18 @@ complete_filter <- function(id){
       prop_ind[i] <- no_ind/N
       }
     }
+    
+    print(survivors1); print(survivors2)    
 
     proportion_independent <<- prop_ind
-    out <- (prod(survivors1) - prod(survivors2))/N^m
+    out <- prod(survivors1/N) - prod(survivors2/N)
+    s1 <<- survivors1; s2 <<- survivors2
   }
 
   v <- c(out,L)
 
-  results_name <- paste(paste("results/task",task,sep="_"),".RData",sep="")
-  save(v, file=results_name)
+  results_name <- paste(paste("survival-results/task",task,sep="_"),".RData",sep="")
+  save(list=ls(), file=results_name)
 
   return(v)
 }
