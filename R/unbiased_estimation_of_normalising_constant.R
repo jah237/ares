@@ -402,8 +402,16 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
     }
     prop_ind[i] <- no_ind/N
   }
+
+     if(save_seed==TRUE){
+        saved_seed <- .Random.seed
+        name <- paste(paste("data/task",id,sep="_"),".RData",sep="")
+        save(list=ls(), file=name)
+      }
+
+  
   proportion_independent <<- prop_ind
-  out <- (prod(survivors1/N) - prod(survivors2/N))
+  out <- (prod(survivors1/N) -  prod(survivors2/N))
   return(out)
 }
 

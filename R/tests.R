@@ -1,14 +1,17 @@
-ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1){
+ex1_compare <- function( no_trials,no_particles,no_levels,save_seed,random_seed=1){
 
   n <- no_trials
 
-  L_gen <- function(){
-    rgeom(1,0.5)
-  }
+ L_gen <- function(){
+   rgeom(1,0.5)
+ }
 
-  L_dens <- function(x){
-    dgeom(x,0.5)
-  }
+ L_dens <- function(x){
+   dgeom(x,0.5)
+ }
+
+ #L_gen <- function(){return(L)}
+ #L_dens <- function(L){return(1)}
 
   #L_gen <- function(){
   #  rgeom(1,0.7)
@@ -31,7 +34,7 @@ ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1
 
   for(i in 1:no_trials){
     print(c("trial",i))
-    trial <-  mlpf(L_gen, L_dens, N=50, d=2, lambda, xi=xi, z_A=0, levels, plot=FALSE,save_seed,random_seed)
+    trial <-  mlpf(L_gen, L_dens, N=no_particles, d=2, lambda, xi=xi, z_A=0, levels, plot=FALSE,save_seed,random_seed)
     v[i,1] <- trial$p
     v[i,2] <- trial$L
   }
