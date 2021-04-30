@@ -280,11 +280,13 @@ ips_exact <- function(L, L_mass, N, lambda, init_weights, V, G,
   return(list(p=out, L=L))
 }
 
-ips_ex4 <- function(){
+ips_ex4 <- function(id){
+
+  set.seed(id)
 
   N <- 20000
-  A <- 5
-  n <- 8
+  A <- 12
+  n <- 10
   alpha <- 1
   x_0 <- 0
 
@@ -355,5 +357,9 @@ ips_ex4 <- function(){
 
   out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
                           update_weights, A, n, estimator, alpha, V_0)
+  
+  name <- paste(paste("results/task",id,sep="_"),".RData",sep="")
+  save(out, file=name)
+
   return(out)
 }
