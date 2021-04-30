@@ -197,25 +197,33 @@ coupled_resampling2 <- function(Gx1, Gx2){
   w_min <- pmin(w1,w2)
 
   a <- sum(w_min)
+  
+  probs1 <- w_min/a
 
-  U <- runif(1)
-
-  if(U < a){
-
-    prob=w_min/a
-
-    I1 <- sample(1:N, size=N, replace=TRUE, prob=prob)
-    I2 <- I1
-
-  } else {
-
-    prob1 <- (w1-w_min)/sum(w1-w_min)
-    prob2 <- (w2-w_min)/sum(w2-w_min)
-
-    I1 <- sample(1:N, size=N, replace=TRUE, prob=prob1)
-    I2 <- sample(1:N, size=N, replace=TRUE,prob=prob2)
+  I1 <- I2 <- integer(N)
+  
+  U <- runif(N)
+  which_coupled <- which(U < a)
+  no_identical <- length(which_coupled)
+  
+  I1[which_coupled] <- I2[which_coupled] <- sample(1:N, size=no_identical, 
+                                                  replace=TRUE, prob=probs1)
+  
+  
+  if(no_identical < N){
+    
+    no_independent <- N - no_identical
+  
+    probs2 <- (w1-w_min)/sum(w1-w_min)
+    probs3 <- (w2-w_min)/sum(w2-w_min)
+  
+    I1[-which_coupled] <- sample(1:N, size=no_independent, 
+                                    replace=TRUE, prob=probs2)
+  
+    I2[-which_coupled] <- sample(1:N, size=no_independent,
+                                    replace=TRUE, prob=probs3)
   }
-
+  
   out <- list(I1=I1, I2=I2)
   return(out)
 }
@@ -229,6 +237,9 @@ ips_coupled <- function(N, lambda, init_weights, V, G, K_coupled, update_weights
   norm_constants1 <- norm_constants2 <- numeric(n)
 
   for(i in 1:n){
+    
+    print(X1[1:10]); print(X2[1:10])
+    print(weights1[1:10]); print(weights2[1:10])
 
     GX1 <- G(alpha, V, X1, weights1); GX2 <- G(alpha, V, X2, weights2)
     norm_constants1[i] <- mean(GX1); norm_constants2[i] <- mean(GX2)
@@ -253,6 +264,7 @@ ips_coupled <- function(N, lambda, init_weights, V, G, K_coupled, update_weights
 
   p1 <- estimator(nc1, verdict1, weights1, alpha, V, V_0s)
   p2 <- estimator(nc2, verdict2, weights2, alpha, V, V_0s)
+  print(c("p1",p1,"p2",p2))
   out <- (p1 - p2)
   return(out)
 }
