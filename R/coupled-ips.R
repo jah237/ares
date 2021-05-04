@@ -349,7 +349,7 @@ ips_ex4 <- function(id){
       if(sgn == 1){
         w_old <- w
       } else {
-        x2 <- x2 - theta*delta*x1 + (w_old + w)
+        x2 <- x2 - theta*2*delta*x2 + (w_old + w)
       }
     }
 
