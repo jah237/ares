@@ -33,7 +33,6 @@ ex1_compare <- function( no_trials,no_particles,no_levels,save_seed,random_seed=
   v <- matrix(0,nrow=no_trials,ncol=2)
 
   for(i in 1:no_trials){
-    print(c("trial",i))
     trial <-  mlpf(L_gen, L_dens, N=no_particles, d=2, lambda, xi=xi, z_A=0, levels, plot=FALSE,save_seed,random_seed)
     v[i,1] <- trial$p
     v[i,2] <- trial$L
