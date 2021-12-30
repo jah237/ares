@@ -583,21 +583,26 @@ ips_ex4_noid <- function(L,N){
   return(out)
 }
 
-ips_ml <- function(L){
+ips_ml <- function(id, L){
+  
+  set.seed(id)
   
   N_0 <- 2^(2*L)*L
-  print(c("N_0",N_0))
   Ns <- floor(N_0*2^(-3/4 * (0:L)))
-  print(Ns)
   
   mlmc_est <- 0
   
   for(l in 0:L){
     N_l <- Ns[l+1] 
     level_l_est <- ips_ex4_noid(l,N_l)
-    print(level_l_est$p)
     mlmc_est <- mlmc_est + level_l_est$p
   }
   
-  return(mlmc_est)
+  out <- mlmc_est
+  
+  name <- paste(paste("ml-results/L",L,"task",id,sep="_"),".RData",sep="")
+  save(out, file=name)
+  
+  
+  return(out)
 }
