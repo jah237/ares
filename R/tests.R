@@ -38,7 +38,7 @@ ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1
     v[i,2] <- trial$L
   }
 
-  name <- paste(paste("results/task",random_seed,sep="_"),".RData",sep="")
+  name <- paste(paste("mls-results/task",random_seed,sep="_"),".RData",sep="")
   save(v, file=name)
 
   return(v)
