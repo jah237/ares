@@ -349,7 +349,7 @@ ips_ex4 <- function(L,id){
   out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
                           update_weights, A, n, estimator, alpha, V_0)
   
-  name <- paste(paste("results/task",id,sep="_"),".RData",sep="")
+  name <- paste(paste("coupled-results/L",L,"task",id,sep="_"),".RData",sep="")
   save(out, file=name)
 
   return(out)
