@@ -1,4 +1,4 @@
-ex1_compare <- function( no_trials,no_particles,no_levels,save_seed,random_seed=1){
+ex1_compare <- function(no_trials,no_particles,no_levels,save_seed,random_seed=1){
 
   n <- no_trials
 

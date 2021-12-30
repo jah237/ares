@@ -1,4 +1,3 @@
-
 ips <- function(N, lambda, init_weights, V, G, K, update_weights,
                                                     A, n, estimator, alpha, V_0=0){
   X <- lambda(N); weights <- init_weights; norm_constants <- numeric(n)
@@ -14,34 +13,6 @@ ips <- function(N, lambda, init_weights, V, G, K, update_weights,
 
     weights <- update_weights(alpha, X, weights, G, V)
 
-    X <- K(X)
-  }
-
-  V_fin <- V(X)
-  verdict <- (V_fin > A)
-  nc <- prod(norm_constants)
-  V_0s <- rep(V_0, N)
-
-  out <- estimator(nc, verdict, weights, alpha, V, V_0s)
-  return(out)
-}
-
-ips_with_histories <- function(N, lambda, init_weights, V, G, K, update_weights,
-                                                      A, n, estimator, alpha, V_0=0){
-
-  X <- lambda(N); weights <- init_weights; norm_constants <- numeric(n)
-  X_hist <- matrix(0,n,N); X_hist[1, ] <- X
-
-  for(i in 1:n){
-
-    G_N <- G(alpha, V, X, weights)
-    eta <- mean(G_N); norm_constants[i] <- eta
-    p <- G_N/(N*eta)
-    new_indices <- sample(1:N, replace = TRUE, prob = p)
-
-    X <- X[new_indices]; weights <- weights[new_indices]
-
-    weights <- update_weights(alpha, X, weights, G, V)
     X <- K(X)
   }
 
@@ -141,16 +112,19 @@ ips_ex2 <- function(){
   return(out)
 }
 
-ips_ex3 <- function(){
+ips_ex3 <- function(L,id){
+  
+  set.seed(id)
 
-  N <- 20000
-  A = 5
-  n = 8
+  N <- 10000
+  A = 10
+  n = 10
   alpha = 1
   x_0 <- 0
 
   lambda <- function(N){
-    out <- rep(0,N)
+    x_o <- 0
+    out <- rep(x_0,N)
     return(out)
   }
 
@@ -162,13 +136,13 @@ ips_ex3 <- function(){
     out <- exp(alpha*(V(x)-V(weights)))
     return(out)
   }
+  
+  n_steps <- 2^(L+1)
+  delta <- 1/n_steps
+  sigma <- 3
+  theta <- 1
 
   K <- function(x){
-
-    n_steps <- 2^3
-    delta <- 1/n_steps
-    sigma <- 3
-    theta <- 1
 
     for(i in 1:n_steps){
       x <- x - theta*delta*x + rnorm(N,0,sd=sqrt(delta)*sigma)
@@ -187,6 +161,10 @@ ips_ex3 <- function(){
 
   out <- ips(N, lambda, init_weights, V, G, K, update_weights,
                                                     A, n, estimator, alpha, V_0)
+  
+  name <- paste(paste("results/L",L,"task",id,sep="_"),".RData",sep="")
+  save(out, file=name)
+  
   return(out)
 }
 
@@ -206,7 +184,7 @@ coupled_resampling2 <- function(Gx1, Gx2){
   U <- runif(N)
   which_coupled <- which(U < a)
   no_identical <- length(which_coupled)
-  
+
   I1[which_coupled] <- I2[which_coupled] <- sample(1:N, size=no_identical, 
                                                   replace=TRUE, prob=probs1)
   
@@ -217,7 +195,7 @@ coupled_resampling2 <- function(Gx1, Gx2){
   
     probs2 <- (w1-w_min)/sum(w1-w_min)
     probs3 <- (w2-w_min)/sum(w2-w_min)
-  
+
     I1[-which_coupled] <- sample(1:N, size=no_independent, 
                                     replace=TRUE, prob=probs2)
   
@@ -287,11 +265,12 @@ ips_exact <- function(L, L_mass, N, lambda, init_weights, V, G,
   return(list(p=out, L=L))
 }
 
+#OU process
 ips_ex4 <- function(L,id){
 
   set.seed(id)
 
-  N <- 20000
+  N <- 10000
   A <- 10
   n <- 10
   alpha <- 1
@@ -308,11 +287,12 @@ ips_ex4 <- function(L,id){
   }
   #L <- L_gen()
 
-  n_steps <- 2^(L+7)
+  n_steps <- 2^(L+1)
   delta <- 1/n_steps
 
   lambda <- function(N){
-    out <- rnorm(N, 0, sd=3/sqrt(2))
+    #out <- rnorm(N,0,3/sqrt(2))
+    out <- rep(0,N)
     return(out)
   }
 
@@ -348,7 +328,9 @@ ips_ex4 <- function(L,id){
       if(sgn == 1){
         w_old <- w
       } else {
-        x2 <- x2 - theta*2*delta*x2 + (w_old + w)
+
+        x2 <- x2 - theta*(2*delta)*x2 + (w_old + w)
+
       }
     }
 
@@ -367,7 +349,7 @@ ips_ex4 <- function(L,id){
   out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
                           update_weights, A, n, estimator, alpha, V_0)
   
-  name <- paste(paste("/storage/u1664122/results9-11/task",id,L,sep="_"),".RData",sep="")
+  name <- paste(paste("results/task",id,sep="_"),".RData",sep="")
   save(out, file=name)
 
   return(out)
@@ -375,4 +357,192 @@ ips_ex4 <- function(L,id){
 
 ips_ex5 <- function(id){
   
-  se
+  set.seed(id)
+  
+  N <- 10000
+  A <- 10
+  n <- 10
+  alpha <- 1
+  x_0 <- 0
+  
+  geom_p <- 0.6
+
+  L_gen <- function(){
+    rgeom(1,geom_p)
+  }
+  
+  L_mass <- function(x){
+    dgeom(x,geom_p)
+  }
+  L <- L_gen()
+
+  n_steps <- 2^(L+11)
+  delta <- 1/n_steps
+  
+  lambda <- function(N){
+    out <- rnorm(N,0,3/sqrt(2))
+    return(out)
+  }
+  
+  V <- function(x){return(x)}
+  init_weights <- rep(x_0, N)
+  V_0 <- V(x_0)
+  
+  G <- function(alpha, V, x, weights){
+    out <- exp(alpha*(V(x)-V(weights)))
+    return(out)
+  }
+  
+  sigma <- 3
+  theta <- 1
+  
+  K <- function(x){
+    
+    for(i in 1:n_steps){
+      x <- x - theta*delta*x + rnorm(N,0,sd=sqrt(delta)*sigma)
+    }
+    return(x)
+  }
+  
+  K_coupled <- function(x1,x2){
+    
+    sgn <- 0
+    
+    for(i in 1:n_steps){
+      sgn <- (sgn + 1)%%2
+      w <- rnorm(N, mean = 0, sd = sqrt(delta)*sigma)
+      x1 <- x1 - theta*delta*x1 + w
+      
+      if(sgn == 1){
+        w_old <- w
+      } else {
+        x2 <- x2 - theta*(2*delta)*x2 + (w_old + w)
+      }
+    }
+    
+    return(list(X1=x1,X2=x2))
+  }
+  
+  update_weights <- function(alpha, X, weights, G, V){
+    out <- X
+    return(out)
+  }
+  
+  estimator <- function(nc, verdict, weights, alpha, V, V_0s){
+    out <- nc * mean(verdict*exp(-alpha*(V(weights) - V_0s)))
+  }
+  
+  out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
+                   update_weights, A, n, estimator, alpha, V_0)
+  
+  name <- paste(paste("OU-1point5-results/task",id,sep="_"),".RData",sep="")
+  save(out, file=name)
+  
+  return(out)
+}
+
+
+###################################################################
+###################################################################
+
+ips_ex4_noid <- function(L,N){
+  
+  A <- 10
+  n <- 10
+  alpha <- 1
+  x_0 <- 0
+  
+  L_gen <- function(){
+    return(L)
+    #rgeom(1,0.6)
+  }
+  
+  L_mass <- function(x){
+    #dgeom(x,0.4)
+    return(1)
+  }
+  #L <- L_gen()
+  
+  n_steps <- 2^(L+3)
+  delta <- 1/n_steps
+  
+  lambda <- function(N){
+    #out <- rnorm(N,0,3/sqrt(2))
+    out <- rep(0,N)
+    return(out)
+  }
+  
+  V <- function(x){return(x)}
+  init_weights <- rep(x_0, N)
+  V_0 <- V(x_0)
+  
+  G <- function(alpha, V, x, weights){
+    out <- exp(alpha*(V(x)-V(weights)))
+    return(out)
+  }
+  
+  sigma <- 3
+  theta <- 1
+  
+  K <- function(x){
+    
+    for(i in 1:n_steps){
+      x <- x - theta*delta*x + rnorm(N,0,sd=sqrt(delta)*sigma)
+    }
+    return(x)
+  }
+  
+  K_coupled <- function(x1,x2){
+    
+    sgn <- 0
+    
+    for(i in 1:n_steps){
+      sgn <- (sgn + 1)%%2
+      w <- rnorm(N, mean = 0, sd = sqrt(delta)*sigma)
+      x1 <- x1 - theta*delta*x1 + w
+      
+      if(sgn == 1){
+        w_old <- w
+      } else {
+        
+        x2 <- x2 - theta*(2*delta)*x2 + (w_old + w)
+        
+      }
+    }
+    
+    return(list(X1=x1,X2=x2))
+  }
+  
+  update_weights <- function(alpha, X, weights, G, V){
+    out <- X
+    return(out)
+  }
+  
+  estimator <- function(nc, verdict, weights, alpha, V, V_0s){
+    out <- nc * mean(verdict*exp(-alpha*(V(weights) - V_0s)))
+  }
+  
+  out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
+                   update_weights, A, n, estimator, alpha, V_0)
+  
+  return(out)
+}
+
+ips_ml <- function(L){
+  
+  N_0 <- 2^(2*L)*L
+  print(c("N_0",N_0))
+  Ns <- floor(N_0*2^(-3/4 * (0:L)))
+  print(Ns)
+  
+  mlmc_est <- 0
+  
+  for(l in 0:L){
+    N_l <- Ns[l+1] 
+    level_l_est <- ips_ex4_noid(l,N_l)
+    print(level_l_est$p)
+    mlmc_est <- mlmc_est + level_l_est$p
+  }
+  
+  return(mlmc_est)
+}
