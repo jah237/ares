@@ -405,7 +405,7 @@ coupled_splitting <- function(N, d, lambda, z_a, levels, delta, xi, L,  plot, sa
 
      if(save_seed==TRUE){
         saved_seed <- .Random.seed
-        name <- paste(paste("data/task",id,sep="_"),".RData",sep="")
+        name <- paste(paste("mls-data/task",id,sep="_"),".RData",sep="")
         save(list=ls(), file=name)
       }
 
