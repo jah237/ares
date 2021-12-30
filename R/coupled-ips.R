@@ -346,7 +346,7 @@ ips_ex4 <- function(L,id){
     out <- nc * mean(verdict*exp(-alpha*(V(weights) - V_0s)))
   }
 
-  out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
+  out <- ips_exact_test(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
                           update_weights, A, n, estimator, alpha, V_0)
   
   name <- paste(paste("coupled-results/L",L,"task",id,sep="_"),".RData",sep="")
@@ -439,6 +439,61 @@ ips_ex5 <- function(id){
   save(out, file=name)
   
   return(out)
+}
+
+ips_coupled_test <- function(N, lambda, init_weights, V, G, K_coupled, update_weights,
+                        A, n, estimator, alpha, V_0=0){
+  
+  X1 <- X2 <- lambda(N);
+  weights1 <- weights2 <- init_weights;
+  
+  norm_constants1 <- norm_constants2 <- numeric(n)
+  
+  for(i in 1:n){
+    
+    GX1 <- G(alpha, V, X1, weights1); GX2 <- G(alpha, V, X2, weights2)
+    norm_constants1[i] <- mean(GX1); norm_constants2[i] <- mean(GX2)
+    
+    new_indices <- coupled_resampling2(GX1, GX2)
+    I1 <- new_indices$I1; I2 <- new_indices$I2
+    
+    X1 <- X1[I1]; weights1 <- weights1[I1]
+    X2 <- X2[I2]; weights2 <- weights2[I2]
+    
+    weights1 <- update_weights(alpha, X1, weights1, G, V)
+    weights2 <- update_weights(alpha, X2, weights2, G, V)
+    
+    Xs <- K_coupled(X1,X2)
+    X1 <- Xs$X1; X2 <- Xs$X2
+  }
+  
+  V_fin1 <- V(X1); V_fin2 <- V(X2)
+  verdict1 <- (V_fin1 > A); verdict2 <- (V_fin2 > A)
+  nc1 <- prod(norm_constants1); nc2 <- prod(norm_constants2)
+  V_0s <- rep(V_0, N)
+  
+  p1 <- estimator(nc1, verdict1, weights1, alpha, V, V_0s)
+  p2 <- estimator(nc2, verdict2, weights2, alpha, V, V_0s)
+  return(list(p1=p1, p2=p2))
+}
+
+
+ips_exact_test <- function(L, L_mass, N, lambda, init_weights, V, G,
+                      K, K_coupled, update_weights, A, n, estimator, alpha, V_0=0){
+  
+  if(L == 0){
+    
+    p_est <- ips(N, lambda, init_weights, V, G, K, update_weights,
+                 A, n, estimator, alpha, V_0=0)
+    
+  } else {
+    
+    #estimate using coupled scheme
+    p_est <- ips_coupled_test(N, lambda, init_weights, V, G, K_coupled, update_weights,
+                         A, n, estimator, alpha, V_0=0)
+  }
+  
+  return(p_est)
 }
 
 
