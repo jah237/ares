@@ -169,7 +169,7 @@ ips_ex3 <- function(L,id){
 }
 
 coupled_resampling2 <- function(Gx1, Gx2){
-
+ 
   N <- length(Gx1)
 
   w1 <- Gx1/sum(Gx1); w2 <- Gx2/sum(Gx2)
@@ -583,11 +583,11 @@ ips_ex4_noid <- function(L,N){
   return(out)
 }
 
-ips_ml <- function(id, L){
+ips_ml <- function(L, id){
   
   set.seed(id)
   
-  N_0 <- 2^(2*L)*L
+  N_0 <- 10*2^(2*L)*L
   Ns <- floor(N_0*2^(-3/4 * (0:L)))
   
   mlmc_est <- 0
