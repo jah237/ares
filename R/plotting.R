@@ -5,11 +5,11 @@ gathb <- function(Ns,L,l_start,samples){
   vcol <- numeric((L-(l_start-1))*length(Ns))
   
   for(i in seq_along(Ns)){
-    
+    print(c("i",i))
     N <- Ns[i]
     
     for(l in l_start:L){
-      
+      print(c("l",l))
       record <- numeric(samples)
       
       for(j in seq_along(record)){
