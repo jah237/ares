@@ -112,18 +112,17 @@ ips_ex2 <- function(){
   return(out)
 }
 
-ips_ex3 <- function(L,id){
+ips_ex3 <- function(N,id){
   
   set.seed(id)
 
-  N <- 10000
+  L <- 6
   A = 10
   n = 10
   alpha = 1
   x_0 <- 0
 
   lambda <- function(N){
-    x_o <- 0
     out <- rep(x_0,N)
     return(out)
   }
@@ -162,7 +161,7 @@ ips_ex3 <- function(L,id){
   out <- ips(N, lambda, init_weights, V, G, K, update_weights,
                                                     A, n, estimator, alpha, V_0)
   
-  name <- paste(paste("results/L",L,"task",id,sep="_"),".RData",sep="")
+  name <- paste(paste("var-results/N",N,"task",id,sep="_"),".RData",sep="")
   save(out, file=name)
   
   return(out)
@@ -265,27 +264,29 @@ ips_exact <- function(L, L_mass, N, lambda, init_weights, V, G,
   return(list(p=out, L=L))
 }
 
-#OU process
-ips_ex4 <- function(L,id){
+#OU process - truncated/debiased
+ips_ex4 <- function(id){
 
   set.seed(id)
 
-  N <- 10000
-  A <- 10
+  #N_exp <- round(log2(N))
+  N <- 2000000
+  #L <- 4
+  A <- 9
   n <- 10
   alpha <- 1
   x_0 <- 0
 
   L_gen <- function(){
-    return(L)
-    #rgeom(1,0.6)
+    #return(L)
+    return(sample(0:6,1,prob=2^(-3*(0:6)/2)))
   }
 
   L_mass <- function(x){
-    #dgeom(x,0.4)
-    return(1)
+    return(2^(-3*x/2)/sum(2^(-3*(0:6)/2)))
+    #return(1)
   }
-  #L <- L_gen()
+  L <- L_gen()
 
   n_steps <- 2^(L+1)
   delta <- 1/n_steps
@@ -346,10 +347,10 @@ ips_ex4 <- function(L,id){
     out <- nc * mean(verdict*exp(-alpha*(V(weights) - V_0s)))
   }
 
-  out <- ips_exact_test(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
+  out <- ips_exact(L, L_mass, N, lambda, init_weights, V, G, K, K_coupled,
                           update_weights, A, n, estimator, alpha, V_0)
   
-  name <- paste(paste("coupled-results/L",L,"task",id,sep="_"),".RData",sep="")
+  name <- paste(paste("ub-results/L",L,"task",id,sep="_"),".RData",sep="")
   save(out, file=name)
 
   return(out)
@@ -502,7 +503,7 @@ ips_exact_test <- function(L, L_mass, N, lambda, init_weights, V, G,
 
 ips_ex4_noid <- function(L,N){
   
-  A <- 10
+  A <- 9
   n <- 10
   alpha <- 1
   x_0 <- 0
@@ -583,26 +584,28 @@ ips_ex4_noid <- function(L,N){
   return(out)
 }
 
-ips_ml <- function(id, L){
+ips_ml <- function(L, id){
   
   set.seed(id)
   
-  N_0 <- 2^(2*L)*L
+  N_0 <-100*2^(2*L)*L
   Ns <- floor(N_0*2^(-3/4 * (0:L)))
   
   mlmc_est <- 0
   
   for(l in 0:L){
-    N_l <- Ns[l+1] 
+    N_l <- Ns[l+1]
+    print(c("L","l","N_l"))
+    print(c(L,l,N_l)) 
     level_l_est <- ips_ex4_noid(l,N_l)
+    print(level_l_est)
     mlmc_est <- mlmc_est + level_l_est$p
   }
   
   out <- mlmc_est
   
-  name <- paste(paste("ml-results/L",L,"task",id,sep="_"),".RData",sep="")
+  name <- paste(paste("ml-results-fin/L",L,"task",id,sep="_"),".RData",sep="")
   save(out, file=name)
-  
-  
+  print(out)
   return(out)
 }
